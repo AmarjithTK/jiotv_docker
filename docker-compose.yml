@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  jiotv_go:
+    image: ghcr.io/jiotv-go/jiotv_go
+    ports:
+      - "5002:5002"  # The host port 5002 maps to container port 5002
+    volumes:
+      - ./jiotv_go:/app/.jiotv_go  # Persistent storage for JioTV data
+      - ./secrets:/app/secrets  # Mount local secrets directory (for certificates, etc.)
+    environment:
+      - JIOTV_PATH_PREFIX=/app/.jiotv_go  # Customize the storage path if needed
+      - TZ=Asia/Kolkata  # Set your timezone
+      - JIOTV_DRM=true  # Enable DRM protection
+    command: serve --public --port 5002 --tls --tls-cert /app/secrets/cert.pem --tls-key /app/secrets/key.pem  # TLS-enabled server
+    restart: unless-stopped 
+
+volumes:
+  jiotv_go:
+
+# create a proper ssl key pair ---------------------------------- 
+# openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout key.pem -out cert.pem
