@@ -13,6 +13,25 @@ services:
       - JIOTV_DRM=true  # Enable DRM protection
     command: serve --public --port 5002 --tls --tls-cert /app/secrets/cert.pem --tls-key /app/secrets/key.pem  # TLS-enabled server
     restart: unless-stopped 
+    networks:
+      - my_network 
+      
+  nginx:
+    image: nginx:latest
+    ports:
+      - "90:80"  # Expose HTTP port to the outside world
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro  # Mount the custom Nginx config
+      - ./secrets:/app/secrets  # Mount SSL certificates (if needed for SSL termination)
+    depends_on:
+      - jiotv_go  # Ensure JioTV container is running before Nginx starts
+    restart: unless-stopped
+    networks:
+      - my_network     
+
+networks:
+  my_network:
+    driver: bridge 
 
 volumes:
   jiotv_go:
